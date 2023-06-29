@@ -140,6 +140,7 @@
           // 删除成功后重新加载数据
           searchBooks();
         } else {
+          alert('Failed to delete book:' + data.detail)
           console.error('Failed to delete book:', data.message);
         }
       })
@@ -155,6 +156,11 @@
       const price = document.getElementById('addPrice').value;
       const rating = document.getElementById('addRating').value;
       const summary = document.getElementById('addSummary').value;
+      if (!title) {
+        alert('Please enter a book title.')
+        console.error('Please enter a book title.');
+        return;
+      }
 
       const bookData = {
         title: title,
@@ -176,7 +182,13 @@
         .then(response => response.json())
         .then(data => {
           console.log('Book added:', data);
-          searchBooks(); // 新增成功后刷新表格
+          if (data.code === 200) {
+          // 新增成功后重新加载数据
+          searchBooks();
+            }else {
+          alert('Failed to add book:' + data.detail)
+          console.error('Failed to add book:', data.message);
+        }
         })
         .catch(error => console.error(error));
     }
@@ -191,6 +203,7 @@
       const rating = document.getElementById('addRating').value;
       const summary = document.getElementById('addSummary').value;
       if (!title) {
+        alert('Please enter a book title.')
         console.error('Please enter a book title.');
         return;
       }
@@ -219,7 +232,8 @@
           // 更新成功后重新加载数据
           searchBooks();
         } else {
-          console.error('Failed to update book:', data.message);
+          alert('Failed to updated book:' + data.detail)
+          console.error('Failed to updated book:', data.message);
         }
       })
       .catch(error => console.error(error));
