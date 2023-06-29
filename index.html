@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Book Information</title>
+</head>
+<style>
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+</style>
+<body>
+  <h1>Book Information</h1>
+
+  <h2>Search Books</h2>
+  <button onclick="searchBooks()">Search</button>
+
+  <h2>Add Book</h2>
+  <label for="addTitle">Title:</label>
+  <input type="text" id="addTitle" placeholder="Enter title">
+  <label for="addAuthor">Author:</label>
+  <input type="text" id="addAuthor" placeholder="Enter author">
+  <label for="addPublisher">Publisher:</label>
+  <input type="text" id="addPublisher" placeholder="Enter publisher">
+  <label for="addPublicationDate">Publish Time:</label>
+  <input type="text" id="addPublicationDate" placeholder="Enter publish time">
+  <label for="addPrice">Price:</label>
+  <input type="text" id="addPrice" placeholder="Enter price">
+  <label for="addRating">Rating:</label>
+  <input type="text" id="addRating" placeholder="Enter rating">
+  <label for="addSummary">Summary:</label>
+  <input type="text" id="addSummary" placeholder="Enter summary">
+  <button onclick="addBook()">Add</button>
+  <button onclick="updateBook()">Update</button>
+
+  <h2>Books</h2>
+  <table id="bookTable">
+    <thead id="tableHead">
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Publisher</th>
+        <th>Publish Time</th>
+        <th>Price</th>
+        <th>Score</th>
+        <th>Summary</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="bookTableBody"></tbody>
+  </table>
+
+  <script>
+    // 获取表格元素
+    const bookTableBody = document.getElementById('bookTableBody');
+
+    // 查询图书
+    function searchBooks() {
+      fetch(`http://127.0.0.1:8000/book`)
+        .then(response => response.json())
+        .then(data => {
+          renderBooks(data.data);
+        })
+        .catch(error => console.error(error));
+    }
+
+    // 渲染表格
+    function renderBooks(books) {
+      const bookTableBody = document.getElementById('bookTableBody');
+      const tableHead = document.getElementById('tableHead');
+      bookTableBody.innerHTML = ''; // 清空表格内容
+
+      books.forEach(book => {
+        const row = document.createElement('tr');
+
+        const titleCell = document.createElement('td');
+        titleCell.textContent = book.title;
+        row.appendChild(titleCell);
+
+        const authorCell = document.createElement('td');
+        authorCell.textContent = book.author;
+        row.appendChild(authorCell);
+
+        const publisherCell = document.createElement('td');
+        publisherCell.textContent = book.publisher;
+        row.appendChild(publisherCell);
+
+        const publishTimeCell = document.createElement('td');
+        publishTimeCell.textContent = book.publish_time;
+        row.appendChild(publishTimeCell);
+
+        const priceCell = document.createElement('td');
+        priceCell.textContent = book.price;
+        row.appendChild(priceCell);
+
+        const ratingCell = document.createElement('td');
+        ratingCell.textContent = book.score;
+        row.appendChild(ratingCell);
+
+        const summaryCell = document.createElement('td');
+        summaryCell.textContent = book.description;
+        row.appendChild(summaryCell);
+
+        const deleteCell = document.createElement('td');
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => {
+          // 从第一列获取图书名进行删除
+          const title = row.cells[0].textContent;
+          deleteBook(title);
+        });
+        deleteCell.appendChild(deleteButton);
+        row.appendChild(deleteCell);
+
+        // 添加行到表格
+        bookTableBody.appendChild(row);
+      });
+
+    }
+
+    // 删除图书
+    function deleteBook(title) {
+      fetch(`http://127.0.0.1:8000/book`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.code === 200) {
+          // 删除成功后重新加载数据
+          searchBooks();
+        } else {
+          console.error('Failed to delete book:', data.message);
+        }
+      })
+      .catch(error => console.error(error));
+    }
+
+    // 新增图书
+    function addBook() {
+      const title = document.getElementById('addTitle').value;
+      const author = document.getElementById('addAuthor').value;
+      const publisher = document.getElementById('addPublisher').value;
+      const publicationDate = document.getElementById('addPublicationDate').value;
+      const price = document.getElementById('addPrice').value;
+      const rating = document.getElementById('addRating').value;
+      const summary = document.getElementById('addSummary').value;
+
+      const bookData = {
+        title: title,
+        author: author,
+        publisher: publisher,
+        publish_time: publicationDate || null,
+        price: price || null,
+        score: rating || null,
+        description: summary
+      };
+
+      fetch('http://127.0.0.1:8000/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookData)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Book added:', data);
+          searchBooks(); // 新增成功后刷新表格
+        })
+        .catch(error => console.error(error));
+    }
+
+    // 更新图书
+    function updateBook() {
+      const title = document.getElementById('addTitle').value;
+      const author = document.getElementById('addAuthor').value;
+      const publisher = document.getElementById('addPublisher').value;
+      const publicationDate = document.getElementById('addPublicationDate').value;
+      const price = document.getElementById('addPrice').value;
+      const rating = document.getElementById('addRating').value;
+      const summary = document.getElementById('addSummary').value;
+      if (!title) {
+        console.error('Please enter a book title.');
+        return;
+      }
+
+      const bookData = {
+        title: title,
+        author: author,
+        publisher: publisher,
+        publish_time: publicationDate || null,
+        price: price || null,
+        score: rating || null,
+        description: summary
+      };
+
+      fetch(`http://127.0.0.1:8000/book`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data.code === 200) {
+          // 更新成功后重新加载数据
+          searchBooks();
+        } else {
+          console.error('Failed to update book:', data.message);
+        }
+      })
+      .catch(error => console.error(error));
+    }
+  </script>
+</body>
+</html>
