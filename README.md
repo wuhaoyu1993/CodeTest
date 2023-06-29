@@ -9,7 +9,7 @@
 =
  1.克隆仓库：
 
-    git clone https://github.com/your-username/douban-spider.git
+    git clone https://github.com/wuhaoyu1993/CodeTest.git
 2.进入项目目录：
 
     cd CodeTest
